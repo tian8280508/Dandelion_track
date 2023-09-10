@@ -1,8 +1,8 @@
 PROXIES = {
-    'http': 'http://127.0.0.1:7890',
-    'https': 'http://127.0.0.1:7890',
+    # 'http': 'http://127.0.0.1:7890',
+    # 'https': 'http://127.0.0.1:7890',
 }
-APIKEY = 'WF8kIzHKC6DGJ9e8Nhwv'
+APIKEY = 'Mpv5yY7i0kPRLuFLGtgO'
 PAGE_SIZE = 50
 TRANSACTIONS_SAVE_PATH = 'FistGlanceOnData/USDT/'
 DEFAULT_TX_FIlTER = {
@@ -37,4 +37,19 @@ DEFAULT_CLASS_FILTER = {
     'out_degree': 0,
     'max_degree': 4,
     'degree_sum': 0
+}
+
+MYSQL_CONFIG = {
+    "username": 'root',
+    "password": '123456',
+    "host": '127.0.0.1',
+    "port": 3306,
+    "database": 'eth'
+}
+
+NEO4J_CONFIG = {
+    "username": 'neo4j',
+    "password": '12345678',
+    "host": '127.0.0.1',
+    "port": 7687,
 }

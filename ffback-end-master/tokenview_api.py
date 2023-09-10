@@ -1,6 +1,3 @@
-"""
-重写一下下载函数，不用嵌套了
-"""
 import requests
 import time
 import pandas as pd
@@ -32,7 +29,7 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
         while flag != 1:
             print(f"\r{address[:8]}:P{page_num} cost:%3.2f" % (time.time() - time_start), flush=True, end='')
             try:
-                url = f'https://services.tokenview.com/vipapi/{PUBLIC_CHAIN}/address/tokentrans/{address}/{TOKEN_ADDRESS}/{page_num}/{PAGE_SIZE}?apikey={apikey}'
+                url = f'https://services.tokenview.io/vipapi/{PUBLIC_CHAIN}/address/tokentrans/{address}/{TOKEN_ADDRESS}/{page_num}/{PAGE_SIZE}?apikey={apikey}'
                 response = requests.get(url, proxies=PROXIES)
                 if response.status_code in [200, 400]:
                     # 200正常 400 为参数无效时候的state_code（json中code为10001
@@ -44,6 +41,7 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
 
                     elif content['code'] == 1:
                         # 这一页是有数据的
+                        # print(content)
                         txs.extend(content['data'])
                         page_num = page_num + 1
 
@@ -63,12 +61,14 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
                 'tx_to': content['to'],
                 'tx_value': int(content['value'])
             })
+        
+        print(len(txs_2))
 
-        tx_DF = pd.DataFrame(txs_2)
+        # tx_DF = pd.DataFrame(txs_2)
         time_start = time.time()
 
         # wallet
-        sql = 'INSERT IGNORE INTO wallets(wa_address) VALUES (%s)'
+        sql = 'INSERT INTO wallets(wa_address) VALUES (%s)'
         addresses_value = list(set([tx['tx_from'] for tx in txs_2] + [tx['tx_to'] for tx in txs_2]))
         addresses_value = [[address] for address in addresses_value]
         res0 = cursor.executemany(sql, addresses_value)
@@ -85,18 +85,18 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
 
         # neo4j
         time_start = time.time()
-        tx_DF.to_csv(f'{TEMP_SAVE_PATH}transactions.csv', encoding='utf-8', index=False)
-        sftp_upload_file(f"{TEMP_SAVE_PATH}transactions.csv")
+        # tx_DF.to_csv(f'{TEMP_SAVE_PATH}transactions.csv', encoding='utf-8', index=False)
+        # sftp_upload_file(f"{TEMP_SAVE_PATH}transactions.csv")
 
-        graph.run("CREATE CONSTRAINT ON (n:Wallet) ASSERT n.address IS UNIQUE").stats()
-        graph.run("CREATE CONSTRAINT ON (n:Transaction) ASSERT n.hash IS UNIQUE").stats()
+        # graph.run("CREATE CONSTRAINT ON (n:Wallet) ASSERT n.address IS UNIQUE").stats()
+        # graph.run("CREATE CONSTRAINT ON (n:Transaction) ASSERT n.hash IS UNIQUE").stats()
 
-        result = graph.run('''
-                            LOAD CSV WITH HEADERS FROM "file:///transactions.csv" AS line
-                            MERGE(a:Wallet{name:line.tx_to,address:line.tx_to,token_addr:line.tx_token_addr,balance:-1}) 
-                            MERGE(b:Wallet{name:line.tx_from,address:line.tx_from,token_addr:line.tx_token_addr,balance:-1}) 
-                            MERGE(a)-[:Transaction{name:line.tx_id,hash:line.tx_id,time:toInteger(line.tx_time),value:toInteger(line.tx_value),token_decimals:toInteger(line.tx_token_decimals)}]->(b)
-                        ''').stats()
+        # result = graph.run('''
+        #                     LOAD CSV WITH HEADERS FROM "file:///transactions.csv" AS line
+        #                     MERGE(a:Wallet{name:line.tx_to,address:line.tx_to,token_addr:line.tx_token_addr,balance:-1}) 
+        #                     MERGE(b:Wallet{name:line.tx_from,address:line.tx_from,token_addr:line.tx_token_addr,balance:-1}) 
+        #                     MERGE(a)-[:Transaction{name:line.tx_id,hash:line.tx_id,time:toInteger(line.tx_time),value:toInteger(line.tx_value),token_decimals:toInteger(line.tx_token_decimals)}]->(b)
+        #                 ''').stats()
         try:
             print(f"Neo4j:创建{result['nodes_created']}个节点和{result['relationships_created']}条关系"
                   f", cost:%3.2f" % (time.time() - time_start))

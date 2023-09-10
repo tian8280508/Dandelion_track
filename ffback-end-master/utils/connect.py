@@ -2,27 +2,56 @@ from sqlalchemy import create_engine
 import pymysql
 from py2neo import Graph
 
+MYSQL_CONFIG = {
+    "username": 'root',
+    "password": 'Welcome1!',
+    "host": 'localhost',
+    "port": 3306,
+    "database": 'eth'
+}
+
+NEO4J_CONFIG = {
+    "username": 'neo4j',
+    "password": '12345678',
+    "host": '127.0.0.1',
+    "port": 7687,
+}
 
 def create_sqlalchemy_con():
-    engine = create_engine(
-        "mysql+pymysql://{}:{}@{}/{}".format('root', 'Albert738822655!', '101.34.159.189:12345', 'eth'))
+    seq = "mysql+mysqldb://{}:{}@{}:{}/{}".format(MYSQL_CONFIG["username"], 
+                                             MYSQL_CONFIG["password"], 
+                                             MYSQL_CONFIG["host"], 
+                                             MYSQL_CONFIG["port"], 
+                                             MYSQL_CONFIG["database"])
+    print(seq)
+    engine = create_engine(seq)
     sqlalchemy_con = engine.connect()  # 创建连接
+    try:
+        sqlalchemy_con.execute("SELECT 1")  # 测试连接
+        print("成功连接数据库")
+    except Exception as e:
+        print(e)
+        print("数据库连接失败")
+        sqlalchemy_con = None
     return sqlalchemy_con
 
 
 def create_pymysql_con():
     pymysql_con = pymysql.connect(
-        host="101.34.159.189",
-        database="eth",
-        user="root",
-        password="Albert738822655!",
-        port=12345,
+        host=MYSQL_CONFIG["host"],
+        database=MYSQL_CONFIG["database"],
+        user=MYSQL_CONFIG["username"],
+        password=MYSQL_CONFIG["password"],
+        port=MYSQL_CONFIG["port"],
     )
     return pymysql_con
 
 
 def create_neo4j_graph():
-    graph = Graph("bolt://101.34.159.189:7687", auth=("neo4j", "Albert738822655!"))
+    graph = Graph("bolt://{}:{}".format(NEO4J_CONFIG["host"],
+                                        NEO4J_CONFIG["port"]),
+                  auth=(NEO4J_CONFIG["username"], 
+                        NEO4J_CONFIG["password"]))
     return graph
 
 
@@ -111,3 +140,8 @@ def check_mysql_databases(pymysql_con):
         print("成功创建数据库wallets")
     except Exception as e:
         print(e)
+
+if __name__=="__main__":
+    pymysql_con = create_sqlalchemy_con()
+    print(pymysql_con)
+    

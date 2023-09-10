@@ -2,8 +2,7 @@ import paramiko
 import os
 
 
-def sftp_upload_file(local_path, server_path='/root/neo4j/', host='101.34.159.189', user='root',
-                     password='Albert738822655!', ):
+def sftp_upload_file(local_path, server_path, host, user, password):
     _, file = os.path.split(local_path)
     t = paramiko.Transport((host, 22))
     t.connect(username=user, password=password)

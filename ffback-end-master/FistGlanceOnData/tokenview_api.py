@@ -227,14 +227,25 @@ def addresses_2_database(download_addresses):
 
         # 保存到mysql
         engine = create_engine(
-            "mysql+pymysql://{}:{}@{}/{}".format('root', 'Albert738822655!', '101.34.159.189:12345', 'eth'))
+            "mysql+pymysql://{}:{}@{}/{}".format(MYSQL_CONFIG["username"], 
+                                                MYSQL_CONFIG["password"], 
+                                                '{}:{}'.format(MYSQL_CONFIG["host"], 
+                                                                MYSQL_CONFIG["port"]), 
+                                                MYSQL_CONFIG["database"]))
         con = engine.connect()  # 创建连接
         transactionsDF.to_sql(name='transactions', con=con, if_exists='append', index=False)
         print(f"{transactionsDF.shape[0]}条记录已经保存到Mysql")
         # 保存到neo4j
-        transactionsDF.to_csv(f'{TEMP_SAVE_PATH}transactions.csv', encoding='utf-8', index=False)
-        sftp_upload_file(f"{TEMP_SAVE_PATH}transactions.csv")
-        graph = Graph("bolt://101.34.159.189:7687", auth=("neo4j", "Albert738822655!"))
+        # transactionsDF.to_csv(f'{TEMP_SAVE_PATH}transactions.csv', encoding='utf-8', index=False)
+        # sftp_upload_file(f"{TEMP_SAVE_PATH}transactions.csv", 
+        #                  server_path=SERVER_PATH,
+        #                  host=NEO4J_CONFIG["host"],
+        #                  user=NEO4J_CONFIG["username"],
+        #                  password=NEO4J_CONFIG["password"])
+        graph = Graph("bolt://{}:{}".format(NEO4J_CONFIG["host"], 
+                                            NEO4J_CONFIG["port"]), 
+                      auth=(NEO4J_CONFIG["username"], 
+                            NEO4J_CONFIG["password"]))
         graph.run("CREATE CONSTRAINT ON (n:Wallet) ASSERT n.address IS UNIQUE").stats()
         graph.run("CREATE CONSTRAINT ON (n:Transaction) ASSERT n.hash IS UNIQUE").stats()
 
