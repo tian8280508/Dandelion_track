@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>我无敌，你随意</title>
+    <style type="text/css">
+        html, body {
+            font: 16pt arial;
+        }
+
+        #viz {
+            width: 900px;
+            height: 700px;
+            border: 1px solid lightgray;
+            font: 22pt arial;
+        }
+
+    </style>
+    <script src="https://cdn.neo4jlabs.com/neovis.js/v1.5.0/neovis.js"></script>
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        // define config car
+        // instantiate nodevis object
+        // draw
+
+        var viz;
+
+        function draw() {
+            var config = {
+                container_id: "viz",
+                server_url: "bolt://101.34.159.189:7687",
+                server_user: "neo4j",
+                server_password: "Albert738822655!",
+                labels: {
+                    //"Character": "name",
+                    "Wallet": {
+                        "caption": false,
+                        "size": 2,
+                        // "community": "community"
+                        //"sizeCypher": "MATCH (n) WHERE id(n) = {id} MATCH (n)-[r]-() RETURN sum(r.weight) AS c"
+                    },
+                    "Transaction": {
+                        "caption": false,
+                        "size": 1,
+                        // "size": "pagerank",
+                        // "community": "community"
+                        //"sizeCypher": "MATCH (n) WHERE id(n) = {id} MATCH (n)-[r]-() RETURN sum(r.weight) AS c"
+                    }
+                },
+                relationships: {
+                    "Out": {
+                        "thickness": "value",
+                        "caption": 'value'
+                    },
+                    "In": {
+                        "thickness": "value",
+                        "caption": 'value'
+                    },
+                },
+                initial_cypher: "MATCH p = ()-[r]-(n:Transaction) where r.value> 100000000 RETURN p"
+            };
+
+            viz = new NeoVis.default(config);
+            viz.render();
+            viz.registerOnEvent("completed", (e) => {
+                console.log(viz);
+                viz["_network"].on("click", (event) => {
+                    console.log(event)
+                });
+            });
+
+        }
+    </script>
+</head>
+<body onload="draw()">
+<div id="viz"></div>
+
+Cypher query: <textarea rows="4" cols=50 id="cypher"></textarea><br>
+<input type="submit" value="Submit" id="reload">
+<input type="submit" value="Stabilize" id="stabilize">
+
+<script>
+    $("#reload").click(function () {
+
+        var cypher = $("#cypher").val();
+
+        if (cypher.length > 3) {
+            viz.renderWithCypher(cypher);
+        } else {
+            console.log("reload");
+            viz.reload();
+
+        }
+
+    });
+
+    $("#stabilize").click(function () {
+        viz.stabilize();
+    })
+
+</script>
+</body>
+</html>

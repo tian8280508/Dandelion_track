@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width">
+		<title>GraphVis基础使用示例</title>
+		<script src="http://media.graphvis.cn/libs/jquery-3.3.1.min.js"></script>
+		<!-- 界面引入GraphVis可视化核心组件库 -->
+		<script src="http://media.graphvis.cn/libs/graphvis.20220327.min.js"></script>
+		<!-- 界面引入GraphVis布局算法组件库 -->
+		<script src="http://media.graphvis.cn/libs/graphvis.layout.min.js"></script>
+	</head>
+	<body>
+		<!-- 定义画布展示元素,id将被用来设置可视化区域，需要指定width和height样式 -->
+		<div id="graph-panel" style="width:100%;height:calc(100vh - 16px);background-color:#efefef;"></div>
+
+		<script type="text/javascript">			
+			//GraphVis可视化对象通用配置项
+			var config = {
+				node: { //节点的默认配置
+					label: { //标签配置
+						show: true, //是否显示
+						color: '20,20,20', //字体颜色
+						font: 'normal 14px Arial', //字体大小及类型 
+						textPosition: 'Bottom_Center', //文字位置 Top_Center,Bottom_Center,Middle_Right,Middle_Center
+						borderWidth: 0, //文字边框宽度
+						borderColor: '50,50,50', //标签边框
+						textOffsetY: 4, //文字偏移量
+						//background:'220,220,220'//标签背景色
+					},
+					shape: 'circle', //rect,circle,star
+					width: 64, //节点宽度
+					height: 64, //节点高度
+					color: '80,200,255', //节点颜色
+					borderColor: '80,80,255', //边框颜色
+					borderWidth: 1, //边框宽度,
+					borderAlpha: 0.6, //边框透明度
+					borderRadius: 5, //边框圆角大小,shape=rect时生效
+					lineDash: [0], //边框虚线间隔,borderWidth>0时生效
+					alpha: 1, //节点透明度
+					selected: { //选中时的样式设置
+						borderColor: '80,80,255', //选中时边框颜色
+						borderAlpha: 0.8, //选中时的边框透明度
+						borderWidth: 4, //选中时的边框宽度
+						//showShadow:true,//开启阴影
+						//shadowBlur:20 //阴影大小
+					}
+				},
+				link: { //连线的默认配置
+					label: { //连线标签
+						show: true, //是否显示
+						color: '50,50,50', //字体颜色
+						font: 'normal 13px Arial', //字体大小及类型
+					},
+					lineType: 'direct', //连线类型,direct,curver
+					colorType: 'source', //连线颜色类型 source:继承source颜色,target:继承target颜色 both:用双边颜色，defined:自定义
+					alpha: 1, // 连线透明度
+					showArrow: false, //显示连线箭头
+				},
+				wheelZoom: 0.8, //开启鼠标滚轮缩放
+				highLightNeiber: false //相邻节点高亮开关
+			};
+			//1、创建GraphVis对象，进行方法调用
+			var visgraph = new VisGraph(document.getElementById('graph-panel'), config);
+			
+			//2、获取服务端数据并绘制关系图
+			$.getJSON('demoData/tree.json',function(demoData) {
+				visgraph.drawData(demoData);//绘制关系数据
+				visgraph.setZoom('auto');//自动缩放
+				
+				setTimeout(()=>{
+					runLayout(visgraph.getGraphData());
+				},1500);
+			});
+			
+			//3、动画帧控制布局计算次数，每一次计算标识布局一次
+			function runLayout(graphData){
+				var circleLayout = new LayoutFactory(graphData).createLayout('singleCirlce');
+				circleLayout.initAlgo();//初始化布局算法
+				
+				circleLayout.resetConfig({
+					cumethod:'auto',//自动计算半径
+					center:[600,400] //圆心的中心位置
+				});
+				
+				//通过动画帧控制控制布局算法的执行，有动画效果
+				var loopName='';
+				function loop(){
+				  cancelAnimationFrame(loopName);//停止动画控制
+				  circleLayout.runLayout();  //运行布局算法
+				  visgraph.refresh(); //刷新视图（优化版本中需要手动刷新视图，原有版本自动刷新性能消耗较大）
+				  loopName = requestAnimationFrame(loop);	    		
+				};
+				loopName = requestAnimationFrame(loop);
+				
+				//4、控制布局3秒后，停止计算
+				setTimeout(()=>{
+					cancelAnimationFrame(loopName);//停止动画控制
+					//visgraph.setZoom('auto');//自动缩放
+				},2000);
+			};			
+		</script>
+	</body>
+</html>
