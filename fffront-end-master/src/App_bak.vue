@@ -8,9 +8,9 @@ import { ElMessage } from 'element-plus'
 
 function copyAddress(address) {
   if (copyContent(address)) {
-    ElMessage({ message: '地址复制成功', type: 'success', center: true })
+    ElMessage({ message: 'Success', type: 'success', center: true })
   } else {
-    ElMessage({ message: '地址复制失败', type: 'error', center: true })
+    ElMessage({ message: 'Failed', type: 'error', center: true })
   }
 }
 
@@ -87,7 +87,7 @@ let myEcharts = ref({});
 //4.定义好echarts的配置数据
 let graphOption = ref({
   title: {
-    text: "无敌的毕设FF",
+    text: "Dandelion",
     subtext: "author:Albert",
     top: "top",
   },

@@ -12,20 +12,20 @@
           </el-table>
 
           <el-table :data="nodeStTable" style="width: 100%" v-if="currentClick == 'node'" :max-height="tableMaxHeight">
-            <el-table-column prop="st_from" label="头节点" sortable :show-overflow-tooltip='true' min-width="40" />
-            <el-table-column prop="st_to" label="尾节点" sortable :show-overflow-tooltip='true' min-width="40" />
-            <el-table-column prop="st_total_num" label="总笔数" sortable min-width="40" />
-            <el-table-column prop="st_total_value" label="总金额" sortable min-width="40" />
-            <el-table-column prop="st_last_tx_time" label="最近时间" sortable min-width="60"
+            <el-table-column prop="st_from" label="From" sortable :show-overflow-tooltip='true' min-width="40" />
+            <el-table-column prop="st_to" label="To" sortable :show-overflow-tooltip='true' min-width="40" />
+            <el-table-column prop="st_total_num" label="Total Transcation" sortable min-width="40" />
+            <el-table-column prop="st_total_value" label="Total Price" sortable min-width="40" />
+            <el-table-column prop="st_last_tx_time" label="Last Time" sortable min-width="60"
               :show-overflow-tooltip='true' />
           </el-table>
           <el-table :data="txTable" style="width: 100%" v-if="currentClick == 'linkBetweenNodes'"
             :max-height="tableMaxHeight">
             <el-table-column prop="tx_id" label="hash" sortable min-width="40" :show-overflow-tooltip='true' />
-            <el-table-column prop="tx_from" label="头节点" sortable :show-overflow-tooltip='true' min-width="40" />
-            <el-table-column prop="tx_to" label="尾节点" sortable :show-overflow-tooltip='true' min-width="40" />
-            <el-table-column prop="tx_value" label="金额" sortable min-width="40" />
-            <el-table-column prop="tx_time" label="时间" sortable min-width="60" />
+            <el-table-column prop="tx_from" label="From" sortable :show-overflow-tooltip='true' min-width="40" />
+            <el-table-column prop="tx_to" label="To" sortable :show-overflow-tooltip='true' min-width="40" />
+            <el-table-column prop="tx_value" label="Price" sortable min-width="40" />
+            <el-table-column prop="tx_time" label="Time" sortable min-width="60" />
           </el-table>
 
         </el-card>
@@ -33,19 +33,19 @@
         <el-card style="height: 500px;">
           <el-tabs v-model="activeTab" class="demo-tabs" @tab-click="handleClick">
 
-            <el-tab-pane label="节点导入 | 交易过滤" name="importNodeTab">
+            <el-tab-pane label="Import Node | Transaction Filter" name="importNodeTab">
               <el-scrollbar :height="scrollbarHeight">
                 <el-form :model="txFilterForm" label-position="left" label-width="120px" style="max-width: 400px">
-                  <el-form-item label="起时间">
+                  <el-form-item label="Start">
                     <el-date-picker class="rectangleItem" v-model='txFilterForm.start_time' type="date"
                       format="YYYY/MM/DD" value-format="YYYY-MM-DD" :default-value="new Date(2019, 10, 9)" />
                   </el-form-item>
-                  <el-form-item label="止时间">
+                  <el-form-item label="End">
                     <el-date-picker class="rectangleItem" v-model='txFilterForm.end_time' type="date"
                       format="YYYY/MM/DD" value-format="YYYY-MM-DD" :default-value="new Date(2023, 10, 0)" />
                   </el-form-item>
 
-                  <el-form-item label="金额基数">
+                  <el-form-item label="Basic Price">
                     <el-input class="rectangleItem" v-model="txFilterForm.value_threshold" clearable>
                       <template #prefix>
                         <el-icon class="el-input__icon">
@@ -56,7 +56,7 @@
                   </el-form-item>
 
 
-                  <el-form-item label="扩展类型">
+                  <el-form-item label="Type to Extend">
                     <el-select class="rectangleItem" clearable>
                       <template #prefix>
                         <el-icon class="el-select__icon">
@@ -66,7 +66,7 @@
                     </el-select>
                   </el-form-item>
 
-                  <el-form-item label="扩展层数">
+                  <el-form-item label="Layer Num to Extend">
                     <el-select class="rectangleItem" clearable>
                       <template #prefix>
                         <el-icon class="el-select__icon">
@@ -77,7 +77,7 @@
                   </el-form-item>
 
 
-                  <el-form-item label="交易数量限制">
+                  <el-form-item label="Limit of Transaction Num">
                     <el-input class="rectangleItem" v-model="txFilterForm.st_num_limit" clearable>
                       <template #prefix>
                         <el-icon class="el-input__icon">
@@ -86,10 +86,10 @@
                       </template>
                     </el-input>
                   </el-form-item>
-                  <el-divider content-position="left">交易过滤</el-divider>
+                  <el-divider content-position="left">Filter</el-divider>
 
-                  <el-form-item label="导入节点">
-                    <el-input style=" width: 260px;" placeholder="请输入单节点的地址" v-model="importAddress" clearable>
+                  <el-form-item label="Node Import">
+                    <el-input style=" width: 260px;" placeholder="Address of node" v-model="importAddress" clearable>
                       <template #append>
                         <el-button @click="addNodeDraw">
                           <el-icon>
@@ -104,10 +104,10 @@
               </el-scrollbar>
 
             </el-tab-pane>
-            <el-tab-pane label="群组导入 | 类过滤" name="importGroupTab">
+            <el-tab-pane label="Import Group | Class Filter" name="importGroupTab">
               <el-scrollbar :height="scrollbarHeight">
                 <el-form :model="classFilterForm" label-position="left" label-width="120px" style="max-width: 400px">
-                  <el-form-item label="聚类基数">
+                  <el-form-item label="Basic Integration Num">
                     <el-input class="rectangleItem" v-model="classFilterForm.class_num" clearable>
                       <template #prefix>
                         <el-icon class="el-input__icon">
@@ -117,7 +117,7 @@
                     </el-input>
                   </el-form-item>
 
-                  <el-form-item label="入度限制">
+                  <el-form-item label="Indegree limit">
                     <el-input class="rectangleItem" v-model="classFilterForm.in_degree" clearable>
                       <template #prefix>
                         <el-icon class="el-input__icon">
@@ -127,7 +127,7 @@
                     </el-input>
                   </el-form-item>
 
-                  <el-form-item label="出度限制">
+                  <el-form-item label="Outdegree limit">
                     <el-input class="rectangleItem" v-model="classFilterForm.out_degree" clearable>
                       <template #prefix>
                         <el-icon class="el-input__icon">
@@ -136,7 +136,7 @@
                       </template>
                     </el-input>
                   </el-form-item>
-                  <el-form-item label="最大度限制">
+                  <el-form-item label="Maxdegree limit">
                     <el-input class="rectangleItem" v-model="classFilterForm.max_degree" clearable>
                       <template #prefix>
                         <el-icon class="el-input__icon">
@@ -146,7 +146,7 @@
                     </el-input>
                   </el-form-item>
 
-                  <el-form-item label="度限制">
+                  <el-form-item label="Degree limit">
                     <el-input class="rectangleItem" v-model="classFilterForm.degree_sum" clearable>
                       <template #prefix>
                         <el-icon class="el-input__icon">
@@ -155,9 +155,9 @@
                       </template>
                     </el-input>
                   </el-form-item>
-                  <el-divider content-position="left">类过滤</el-divider>
+                  <el-divider content-position="left">Filter</el-divider>
 
-                  <el-form-item label="节点群组">
+                  <el-form-item label="Node Groups">
                     <el-tag v-for="address in groupAddresses" :key="address" class="mx-1" closable
                       :disable-transitions="false" @close="handleAddrTagClose(address)">
                       {{ address.substring(0, 18) }}...
@@ -165,7 +165,7 @@
                     <el-input v-if="inputVisible" ref="saveTagInput" v-model="inputAddressTagValue"
                       class="input-new-tag" size="small" @keyup.enter="handleInputConfirm" @blur="handleInputConfirm" />
                     <el-button v-else class="button-new-tag" size="small" @click="showTagInput">
-                      + 添加地址
+                      + Add Address
                     </el-button>
 
                     <el-button @click="addGroupDraw" type="info" size="small">
@@ -185,11 +185,11 @@
               </el-scrollbar>
 
             </el-tab-pane>
-            <el-tab-pane label="布局配置" name="visLayoutConfTab">
+            <el-tab-pane label="Layout Config" name="visLayoutConfTab">
               <el-scrollbar :height="scrollbarHeight">
                 <div v-if="visLayoutConf">
                   <el-form label-position="left" label-width="80px" :inline="true">
-                    <el-form-item label="切换布局">
+                    <el-form-item label="Change Layout">
                       <el-select class="rectangleItem" v-model="visLayoutSelect" @change="visLayoutSelectChange">
                         <el-option v-for="(visLayoutName, index) in visLayoutOption" :key="index" :label="visLayoutName"
                           :value="visLayoutName"></el-option>
@@ -197,12 +197,12 @@
                     </el-form-item>
 
                     <el-form-item>
-                      <el-button type="primary" v-on:click="resetVisLayoutConf">重置布局设置</el-button>
+                      <el-button type="primary" v-on:click="resetVisLayoutConf">Reset</el-button>
 
                     </el-form-item>
 
                   </el-form>
-                  <el-divider content-position="left">布局配置</el-divider>
+                  <el-divider content-position="left">Layout Config</el-divider>
                   <el-form :model="visLayoutConfForm" label-position="left" label-width="80px">
                     <el-form-item v-for="(config, index) in visLayoutConf" :label="config.label" :key="index">
                       <div v-for="(value, key, index2) in config" :key="index2">
@@ -225,14 +225,14 @@
                   </el-form>
                 </div>
 
-                <div v-else>无布局</div>
+                <div v-else>Non-layout</div>
               </el-scrollbar>
 
             </el-tab-pane>
             <el-tab-pane label="APIKEY" name="apiKeyTab">
               <el-form label-position="left" label-width="120px">
                 <el-form-item label="apikey">
-                  <el-input style=" width: 260px;" placeholder="请输入apikey" v-model="apikey">
+                  <el-input style=" width: 260px;" placeholder="apikey" v-model="apikey">
                     <template #append>
                       <el-button @click="updateApikey">
                         <el-icon>
@@ -245,7 +245,7 @@
               </el-form>
             </el-tab-pane>
 
-            <el-tab-pane label="节点命名" name="nameTab">
+            <el-tab-pane label="Rename Node" name="nameTab">
               <el-form label-position="left" label-width="120px">
                 <el-form-item label="newname">
                   <el-input style=" width: 260px;" placeholder="Input node name" v-model="newname"></el-input>
@@ -254,36 +254,36 @@
                   <el-input style=" width: 260px;" placeholder="Input new hash" v-model="newnamehash"></el-input>
                 </el-form-item>
                 <el-form-item>
-                  <el-button @click="updateName">更新名称</el-button>
+                  <el-button @click="updateName">Update name</el-button>
                 </el-form-item>
               </el-form>
             </el-tab-pane>
 
-            <el-tab-pane label="元素自定义" name="elementConfTab">
+            <el-tab-pane label="Label Customize" name="elementConfTab">
 
               <el-form label-position="left" label-width="120px"
                 v-if="currentClick == 'node' || currentClick == 'classNode'" :model="nodeConfForm">
-                <el-form-item label="是否显示标签">
+                <el-form-item label="Label visible">
                   <el-switch v-model="nodeConfForm.showlabel" />
                 </el-form-item>
-                <el-form-item label="节点标签">
-                  <el-input style=" width: 260px;" placeholder="请输入节点标签" v-model="nodeConfForm.label" clearable>
+                <el-form-item label="Label Tag">
+                  <el-input style=" width: 260px;" placeholder="Label Tag" v-model="nodeConfForm.label" clearable>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="节点大小">
-                  <el-input style=" width: 260px;" placeholder="请输入节点大小" v-model="nodeConfForm.radius" clearable>
+                <el-form-item label="Label Radius">
+                  <el-input style=" width: 260px;" placeholder="Label Radius" v-model="nodeConfForm.radius" clearable>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="节点透明度">
-                  <el-input style=" width: 260px;" placeholder="请输入节点透明度" v-model="nodeConfForm.alpha" clearable>
+                <el-form-item label="Label Transparency">
+                  <el-input style=" width: 260px;" placeholder="Label Transparency" v-model="nodeConfForm.alpha" clearable>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="节点颜色">
-                  <el-input style=" width: 260px;" placeholder="请输入节点颜色" v-model="nodeConfForm.fillColor" clearable>
+                <el-form-item label="Label Color">
+                  <el-input style=" width: 260px;" placeholder="Label Color" v-model="nodeConfForm.fillColor" clearable>
                   </el-input>
                 </el-form-item>
                 <el-form-item>
-                  <el-button @click="changeNodeConf">更改节点配置</el-button>
+                  <el-button @click="changeNodeConf">Change Label Config</el-button>
                 </el-form-item>
 
 
@@ -793,7 +793,7 @@ export default {
     // 添加单节点 从this.importAddress中读数据 不需要参数
     async addNodeDraw() {
       ElMessage({
-        message: `节点${this.importAddress}正在加载`,
+        message: `Node ${this.importAddress} Loading`,
         type: 'success',
       })
       // 最先构建图，而不是等数据获取到了再画图 因此把构建图放在mount中
@@ -812,7 +812,7 @@ export default {
       this.visLayoutSelect = "FastFR"
       visgraph.setZoom('auto');//自动缩放
       ElMessage({
-        message: `节点${this.importAddress}加载成功`,
+        message: `Node ${this.importAddress} Load Success`,
         type: 'success',
       })
     },
@@ -859,7 +859,7 @@ export default {
       }
 
       ElMessage({
-        message: `节点群正在加载`,
+        message: `Node Group Loading`,
         type: 'success',
       })
       // 最先构建图，而不是等数据获取到了再画图 因此把构建图放在mount中
@@ -889,7 +889,7 @@ export default {
       // var cluster = new ClusterFactory(visgraph.getGraphData()).createClutser('louvain');
       // cluster.applay();
       ElMessage({
-        message: `节点群加载成功`,
+        message: `Node Group Load Success`,
         type: 'success',
       })
     },
