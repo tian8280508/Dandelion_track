@@ -33,7 +33,7 @@
         <el-card style="height: 500px;">
           <el-tabs v-model="activeTab" class="demo-tabs" @tab-click="handleClick">
 
-            <!-- <el-tab-pane label="节点导入 | 交易过滤" name="importNodeTab">
+            <el-tab-pane label="节点导入 | 交易过滤" name="importNodeTab">
               <el-scrollbar :height="scrollbarHeight">
                 <el-form :model="txFilterForm" label-position="left" label-width="120px" style="max-width: 400px">
                   <el-form-item label="起时间">
@@ -180,15 +180,11 @@
 
                     </el-col>
                   </el-row>
-
-
-
-
                 </el-form>
 
               </el-scrollbar>
 
-            </el-tab-pane> -->
+            </el-tab-pane>
             <el-tab-pane label="布局配置" name="visLayoutConfTab">
               <el-scrollbar :height="scrollbarHeight">
                 <div v-if="visLayoutConf">
@@ -251,11 +247,11 @@
 
             <el-tab-pane label="节点命名" name="nameTab">
               <el-form label-position="left" label-width="120px">
-                <el-form-item label="hash">
-                  <el-input style=" width: 260px;" placeholder="Input node hash" v-model="newname"></el-input>
-                </el-form-item>
                 <el-form-item label="newname">
-                  <el-input style=" width: 260px;" placeholder="Input new name" v-model="newnamehash"></el-input>
+                  <el-input style=" width: 260px;" placeholder="Input node name" v-model="newname"></el-input>
+                </el-form-item>
+                <el-form-item label="hash">
+                  <el-input style=" width: 260px;" placeholder="Input new hash" v-model="newnamehash"></el-input>
                 </el-form-item>
                 <el-form-item>
                   <el-button @click="updateName">更新名称</el-button>
@@ -466,6 +462,7 @@ export default {
       visConf, // 设置文件传入
       visLayoutConf: null, // 布局设置
       if_layout: false,// 判断节点是否布局了
+      namemapping: {},
     }
   },
   methods: {
@@ -703,8 +700,15 @@ export default {
     async getNodeSts(node) {
       if (node.properties.address) {
         const { data: res } = await this.$http.get(`/st/${node.properties.address}`)
+        console.log(res.sts);
         for (let i = 0; i < res.sts.length; i++) {
           res.sts[i].st_last_tx_time = timestampFormat(res.sts[i].st_last_tx_time)
+          if (res.sts[i].st_from in this.namemapping) {
+            res.sts[i].st_from = this.namemapping[res.sts[i].st_from]
+          }
+          if (res.sts[i].st_to in this.namemapping) {
+            res.sts[i].st_to = this.namemapping[res.sts[i].st_to]
+          }
         }
         this.nodeStTable = res.sts
         this.currentClick = this.currentClickOption[0]
@@ -827,7 +831,9 @@ export default {
       }
     },
     async updateName() {
-      console.log(this.apikey);
+      this.namemapping[this.newnamehash] = this.newname
+      // console.log(this.namemapping);
+      this.nodeStTable = []
       const { data: res } = await this.$http.post(`/api/setname`, {
         address: this.newnamehash,
         name: this.newname

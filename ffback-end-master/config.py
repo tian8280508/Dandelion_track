@@ -2,6 +2,7 @@ PROXIES = {
     # 'http': 'http://127.0.0.1:7890',
     # 'https': 'http://127.0.0.1:7890',
 }
+ASAPIKEY = '979af524696049e3a730bd78fc7ed46c'
 APIKEY = 'Mpv5yY7i0kPRLuFLGtgO'
 PAGE_SIZE = 50
 TRANSACTIONS_SAVE_PATH = 'FistGlanceOnData/USDT/'
@@ -14,6 +15,7 @@ DEFAULT_TX_FIlTER = {
 
 TEMP_SAVE_PATH = "./temp/"
 PUBLIC_CHAIN = "eth"
+AS_CHAIN = "ethereum"
 TEST_ADDRESS = '0x189df2a9e40ae85c76bf821d07137a7d2f8fe279'
 TOKEN_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7'
 WARN_ADDRESS_FILE_PATH = 'FistGlanceOnData/warn_address.txt'
