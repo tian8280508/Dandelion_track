@@ -71,7 +71,7 @@ export const visConf = {
 		ondblClick: function(event, link) {} //连线的双击回调事件
 	},
 	highLightNeiber: false, //相邻节点高度标志
-	wheelZoom: 0.9, //滚轮缩放开关，不使用时不设置[0,1]
+	wheelZoom: 0.5, //滚轮缩放开关，不使用时不设置[0,1]
 	noElementClick: function(event) { //画布空白处的点击事件
 	},
 	// rightMenu: {

@@ -2,38 +2,38 @@
   <div class="about">
     <el-row type="center" :gutter="5">
       <!-- 左边部分 -->
-      <el-col :span="10" style="height: 900px;">
+      <el-col :span="10">
 
         <!-- 左上 -->
-        <el-card style="height: 40%;">
+        <el-card style="height: 500px;">
           <el-table :data="showAddressesTable" style="width: 100%" v-if="currentClick == 'classNode'"
             :max-height="tableMaxHeight">
             <el-table-column prop="address" label="地址" sortable />
           </el-table>
 
           <el-table :data="nodeStTable" style="width: 100%" v-if="currentClick == 'node'" :max-height="tableMaxHeight">
-            <el-table-column prop="st_from" label="From" sortable :show-overflow-tooltip='true' min-width="40" />
-            <el-table-column prop="st_to" label="To" sortable :show-overflow-tooltip='true' min-width="40" />
-            <el-table-column prop="st_total_num" label="Transaction Num" sortable min-width="40" />
-            <el-table-column prop="st_total_value" label="Transaction Sum Price" sortable min-width="40" />
-            <el-table-column prop="st_last_tx_time" label="Latest Time" sortable min-width="60"
+            <el-table-column prop="st_from" label="头节点" sortable :show-overflow-tooltip='true' min-width="40" />
+            <el-table-column prop="st_to" label="尾节点" sortable :show-overflow-tooltip='true' min-width="40" />
+            <el-table-column prop="st_total_num" label="总笔数" sortable min-width="40" />
+            <el-table-column prop="st_total_value" label="总金额" sortable min-width="40" />
+            <el-table-column prop="st_last_tx_time" label="最近时间" sortable min-width="60"
               :show-overflow-tooltip='true' />
           </el-table>
           <el-table :data="txTable" style="width: 100%" v-if="currentClick == 'linkBetweenNodes'"
             :max-height="tableMaxHeight">
             <el-table-column prop="tx_id" label="hash" sortable min-width="40" :show-overflow-tooltip='true' />
-            <el-table-column prop="tx_from" label="From" sortable :show-overflow-tooltip='true' min-width="40" />
-            <el-table-column prop="tx_to" label="To" sortable :show-overflow-tooltip='true' min-width="40" />
-            <el-table-column prop="tx_value" label="Price" sortable min-width="40" />
-            <el-table-column prop="tx_time" label="TIme" sortable min-width="60" />
+            <el-table-column prop="tx_from" label="头节点" sortable :show-overflow-tooltip='true' min-width="40" />
+            <el-table-column prop="tx_to" label="尾节点" sortable :show-overflow-tooltip='true' min-width="40" />
+            <el-table-column prop="tx_value" label="金额" sortable min-width="40" />
+            <el-table-column prop="tx_time" label="时间" sortable min-width="60" />
           </el-table>
 
         </el-card>
         <!-- 左下 ctrl k -->
-        <el-card style="height: 60%;">
+        <el-card>
           <el-tabs v-model="activeTab" class="demo-tabs" @tab-click="handleClick">
 
-            <!-- <el-tab-pane label="节点导入 | 交易过滤" name="importNodeTab">
+            <el-tab-pane label="节点导入 | 交易过滤" name="importNodeTab">
               <el-scrollbar :height="scrollbarHeight">
                 <el-form :model="txFilterForm" label-position="left" label-width="120px" style="max-width: 400px">
                   <el-form-item label="起时间">
@@ -103,8 +103,8 @@
 
               </el-scrollbar>
 
-            </el-tab-pane> -->
-            <!-- <el-tab-pane label="群组导入 | 类过滤" name="importGroupTab">
+            </el-tab-pane>
+            <el-tab-pane label="群组导入 | 类过滤" name="importGroupTab">
               <el-scrollbar :height="scrollbarHeight">
                 <el-form :model="classFilterForm" label-position="left" label-width="120px" style="max-width: 400px">
                   <el-form-item label="聚类基数">
@@ -188,12 +188,12 @@
 
               </el-scrollbar>
 
-            </el-tab-pane> -->
-            <el-tab-pane label="Layout Config" name="visLayoutConfTab">
+            </el-tab-pane>
+            <el-tab-pane label="布局配置" name="visLayoutConfTab">
               <el-scrollbar :height="scrollbarHeight">
                 <div v-if="visLayoutConf">
                   <el-form label-position="left" label-width="80px" :inline="true">
-                    <el-form-item label="Change Layout">
+                    <el-form-item label="切换布局">
                       <el-select class="rectangleItem" v-model="visLayoutSelect" @change="visLayoutSelectChange">
                         <el-option v-for="(visLayoutName, index) in visLayoutOption" :key="index" :label="visLayoutName"
                           :value="visLayoutName"></el-option>
@@ -201,12 +201,12 @@
                     </el-form-item>
 
                     <el-form-item>
-                      <el-button type="primary" v-on:click="resetVisLayoutConf">Reset Layout Config</el-button>
+                      <el-button type="primary" v-on:click="resetVisLayoutConf">重置布局设置</el-button>
 
                     </el-form-item>
 
                   </el-form>
-                  <el-divider content-position="left">Layout Config</el-divider>
+                  <el-divider content-position="left">布局配置</el-divider>
                   <el-form :model="visLayoutConfForm" label-position="left" label-width="80px">
                     <el-form-item v-for="(config, index) in visLayoutConf" :label="config.label" :key="index">
                       <div v-for="(value, key, index2) in config" :key="index2">
@@ -229,10 +229,10 @@
                   </el-form>
                 </div>
 
-                <div v-else>Non-Layout</div>
+                <div v-else>无布局</div>
               </el-scrollbar>
-            </el-tab-pane>
 
+            </el-tab-pane>
             <el-tab-pane label="APIKEY" name="apiKeyTab">
               <el-form label-position="left" label-width="120px">
                 <el-form-item label="apikey">
@@ -248,26 +248,26 @@
                 </el-form-item>
               </el-form>
             </el-tab-pane>
-            <el-tab-pane label="Element Definition" name="elementConfTab">
+            <el-tab-pane label="元素自定义" name="elementConfTab">
 
               <el-form label-position="left" label-width="120px"
                 v-if="currentClick == 'node' || currentClick == 'classNode'" :model="nodeConfForm">
-                <el-form-item label="Lable Visible">
+                <el-form-item label="是否显示标签">
                   <el-switch v-model="nodeConfForm.showlabel" />
                 </el-form-item>
-                <el-form-item label="Lable Tag">
+                <el-form-item label="节点标签">
                   <el-input style=" width: 260px;" placeholder="请输入节点标签" v-model="nodeConfForm.label" clearable>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="Node Size">
+                <el-form-item label="节点大小">
                   <el-input style=" width: 260px;" placeholder="请输入节点大小" v-model="nodeConfForm.radius" clearable>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="Node Transparency">
+                <el-form-item label="节点透明度">
                   <el-input style=" width: 260px;" placeholder="请输入节点透明度" v-model="nodeConfForm.alpha" clearable>
                   </el-input>
                 </el-form-item>
-                <el-form-item label="Node Color">
+                <el-form-item label="节点颜色">
                   <el-input style=" width: 260px;" placeholder="请输入节点颜色" v-model="nodeConfForm.fillColor" clearable>
                   </el-input>
                 </el-form-item>
@@ -278,10 +278,10 @@
 
               </el-form>
             </el-tab-pane>
-            <!-- <el-tab-pane label="社群发现配置" name="communityConfTab">
+            <el-tab-pane label="社群发现配置" name="communityConfTab">
               <el-form label-position="left" label-width="120px">
               </el-form>
-            </el-tab-pane> -->
+            </el-tab-pane>
           </el-tabs>
 
         </el-card>
@@ -290,7 +290,7 @@
       </el-col>
       <!-- 右边部分 -->
       <el-col :span="14">
-        <el-card style="height: 100%;">
+        <el-card>
 
           <!-- 画布上的工具栏 -->
           <el-row>
@@ -336,7 +336,7 @@
 
             </el-col>
             <el-col :span="8">
-              <el-input style="width: 250px;" placeholder="Address to search" v-model="searchAddress">
+              <el-input style="width: 250px;" placeholder="请输入需要查找节点的地址" v-model="searchAddress">
                 <template #append>
                   <el-button @click="searchNode">
                     <el-icon>
@@ -349,7 +349,7 @@
             </el-col>
             <el-col :span="8">
 
-              <el-input style=" width: 260px;" placeholder="Address to add" v-model="importAddress" clearable>
+              <el-input style=" width: 260px;" placeholder="请输入需添加节点的地址" v-model="importAddress" clearable>
                 <template #append>
                   <el-button @click="addNodeDraw">
                     <el-icon>
@@ -401,6 +401,7 @@ export default {
       searchState: false,// 是否是查找高亮
       txTable: [],
       tableMaxHeight: 470,
+      // scrollbarHeight: '275px',
       scrollbarHeight: 600,
       nodeStTable: [],
       currentClickOption: ['node', 'classNode', 'linkBetweenNodes'],
@@ -581,7 +582,7 @@ export default {
       var visgraphData = visgraph.getGraphData()
       localStorage.setItem("visgraphData", JSON.stringify(this.dataStep))
       ElMessage({
-        message: `Save Complete！Total ${this.dataStep.data.length} Results`,
+        message: `保存成功！共${this.dataStep.data.length}个查询结果`,
         type: 'success'
       })
     },
@@ -770,7 +771,7 @@ export default {
     // 添加单节点 从this.importAddress中读数据 不需要参数
     async addNodeDraw() {
       ElMessage({
-        message: `Node ${this.importAddress} Loading Now`,
+        message: `节点${this.importAddress}正在加载`,
         type: 'success',
       })
       // 最先构建图，而不是等数据获取到了再画图 因此把构建图放在mount中
@@ -789,7 +790,7 @@ export default {
       this.visLayoutSelect = "FastFR"
       visgraph.setZoom('auto');//自动缩放
       ElMessage({
-        message: `Node ${this.importAddress} Load Success`,
+        message: `节点${this.importAddress}加载成功`,
         type: 'success',
       })
     },
@@ -819,7 +820,7 @@ export default {
       }
 
       ElMessage({
-        message: `Loading Nodes`,
+        message: `节点群正在加载`,
         type: 'success',
       })
       // 最先构建图，而不是等数据获取到了再画图 因此把构建图放在mount中
@@ -842,7 +843,7 @@ export default {
       // var cluster = new ClusterFactory(visgraph.getGraphData()).createClutser('louvain');
       // cluster.applay();
       ElMessage({
-        message: `Nodes Load Success`,
+        message: `节点群加载成功`,
         type: 'success',
       })
     },

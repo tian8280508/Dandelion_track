@@ -15,7 +15,7 @@ def deal_txs(wallets_DF, st_txs_DF, not_show_DF=None):
         on=['st_to']
     )
     transactions_DF = merge_DF_2.loc[:, ['source', 'target', 'st_total_num', "st_total_value", 'st_last_tx_time']]
-    
+
     wallets_DF['label'] = wallets_DF['wa_address'].apply(lambda X: X[:8])
     # id全转为字符
     wallets_DF['id'] = wallets_DF['id'].apply(lambda X: str(X))
@@ -54,11 +54,9 @@ def deal_txs(wallets_DF, st_txs_DF, not_show_DF=None):
                 'last_tx_time': tx['st_last_tx_time']
             },
         })
-        
     if not_show_DF is None:  # 不这样写报错笑死
         pass
     else:
-        # print(wallets_address_to_id)
         for index, row in not_show_DF.iterrows():
             # 插入聚合的虚拟节点
             wallets_draw.append({

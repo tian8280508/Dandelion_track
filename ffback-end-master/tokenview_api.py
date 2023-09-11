@@ -295,7 +295,6 @@ def get_group_st_tx(addresses, pymysql_con, sqlalchemy_con, graph, update=False,
 
     # 根据show_addresses 筛选wallet_DF
     wallets_DF = pd.read_sql_table('wallets', con=sqlalchemy_con).rename(columns={'wa_id': 'id'})
-    print(wallets_DF, show_addresses)
     wallets_DF2 = wallets_DF[wallets_DF['wa_address'].isin(show_addresses)]
     tx_DF = tx_DF[(tx_DF['st_to'].isin(show_addresses)) | (tx_DF['st_from'].isin(show_addresses))]
     # 添加类的交易信息
