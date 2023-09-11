@@ -8,10 +8,126 @@ from utils.connect import create_pymysql_con, create_sqlalchemy_con, create_neo4
 from process import deal_txs
 from sqlalchemy import text
 
+import asyncio
+from airstack.execute_query import AirstackClient
+from datetime import datetime
+
+def get_txs_by_normal(address, apikey=APIKEY, page_num=1, page_size=PAGE_SIZE):
+    # 通过普通的api获取交易信息
+    time_start = time.time()
+    txs = []
+    page_num = 1
+    flag = 0  # 1的时候停止下载
+    
+    while flag != 1:
+        print(f"\r{address[:8]}:P{page_num} cost:%3.2f" % (time.time() - time_start), flush=True, end='')
+        try:
+            url = f'https://services.tokenview.io/vipapi/{PUBLIC_CHAIN}/address/tokentrans/{address}/{TOKEN_ADDRESS}/{page_num}/{PAGE_SIZE}?apikey={apikey}'
+            response = requests.get(url, proxies=PROXIES)
+            if response.status_code in [200, 400]:
+                # 200正常 400 为参数无效时候的state_code（json中code为10001
+                content = response.json()
+                if content['code'] in [404, 10001]:
+                    # 404 是无数据，10001 是参数错误，请求的页面超过50
+                    # 此时结束循环
+                    flag = 1
+
+                elif content['code'] == 1:
+                    # 这一页是有数据的
+                    # print(content)
+                    txs.extend(content['data'])
+                    page_num = page_num + 1
+
+        except Exception as e:
+            print(url)
+            print(f"ERROR:{e},continue in 3 sec!")
+            time.sleep(3)
+
+    txs_2 = []
+    for content in txs:
+        txs_2.append({
+            'tx_time': int(content['time']),
+            'tx_id': content['txid'],
+            'tx_token_addr': content['tokenAddr'],
+            'tx_token_decimals': int(content['tokenDecimals']),
+            'tx_from': content['from'],
+            'tx_to': content['to'],
+            'tx_value': int(content['value'])
+        })
+    
+    return txs_2
+
+async def get_txs_by_airstack(address, apikey=ASAPIKEY, page_num=1, page_size=PAGE_SIZE):
+    # 通过图形api获取交易信息
+    txs = []
+    api_client = AirstackClient(api_key=apikey)
+    flag = 0
+    
+    query = r"""query GetTransactionsFromOrToAddress {
+    ethereumTransfers: TokenTransfers(
+        input: {filter: {_or: [{from: {_eq: "%s"}}, {to: {_eq: "%s"}}], blockTimestamp: {_lte: "2023-09-11T00:00:00.000Z"}}, blockchain: %s, limit: %d}
+    ) {
+        TokenTransfer {
+            from {
+                addresses
+            }
+            to {
+                addresses
+            }
+            tokenAddress
+            token {
+                decimals
+            }
+            amount
+            blockTimestamp
+            transactionHash
+        }
+        pageInfo {
+            nextCursor
+            prevCursor
+        }
+    }
+}""" % (address, address, AS_CHAIN, page_size)
+    
+    while flag!=1:
+        execute_query_client = api_client.create_execute_query_object(query=query)
+        query_response = await execute_query_client.execute_query()
+        
+        query_response = query_response.data
+        try:
+            next_cursor = query_response['ethereumTransfers']['pageInfo']['nextCursor']
+        except:
+            break
+        
+        if next_cursor is None:
+            flag = 1
+            continue
+        else:
+            query = query.replace("limit: %d" % page_size, "limit: %d, cursor: \"%s\"" % (page_size, next_cursor))
+        body = query_response['ethereumTransfers']['TokenTransfer']
+        print(query, len(body))
+        for b in body:
+            dt_object = datetime.strptime(b['blockTimestamp'], '%Y-%m-%dT%H:%M:%SZ')
+
+            # 获取时间戳 (int)
+            timestamp = int(time.mktime(dt_object.timetuple()))
+            
+            txs.append({
+                'tx_time': timestamp,
+                'tx_id': b['transactionHash'],
+                'tx_token_addr': b['tokenAddress'],
+                'tx_token_decimals': int(b['token']['decimals']),
+                'tx_from': b['from']['addresses'][0],
+                'tx_to': b['to']['addresses'][0],
+                'tx_value': int(b['amount'])
+            })
+        
+    return txs
+            
+    
 
 def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, update=True, apikey=APIKEY,
                                    tx_filter=DEFAULT_TX_FIlTER):
-    time_start = time.time()
     cursor = pymysql_con.cursor()
     if_download = 1
     if not update:
@@ -22,46 +138,8 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
             if_download = 0
 
     if if_download:
-        # 更新模式，或者是非更新模式中找不到该数据，仍然需要下载
-        page_num = 1
-        flag = 0  # 1的时候停止下载
-        txs = []
-
-        while flag != 1:
-            print(f"\r{address[:8]}:P{page_num} cost:%3.2f" % (time.time() - time_start), flush=True, end='')
-            try:
-                url = f'https://services.tokenview.io/vipapi/{PUBLIC_CHAIN}/address/tokentrans/{address}/{TOKEN_ADDRESS}/{page_num}/{PAGE_SIZE}?apikey={apikey}'
-                response = requests.get(url, proxies=PROXIES)
-                if response.status_code in [200, 400]:
-                    # 200正常 400 为参数无效时候的state_code（json中code为10001
-                    content = response.json()
-                    if content['code'] in [404, 10001]:
-                        # 404 是无数据，10001 是参数错误，请求的页面超过50
-                        # 此时结束循环
-                        flag = 1
-
-                    elif content['code'] == 1:
-                        # 这一页是有数据的
-                        # print(content)
-                        txs.extend(content['data'])
-                        page_num = page_num + 1
-
-            except Exception as e:
-                print(url)
-                print(f"ERROR:{e},continue in 3 sec!")
-                time.sleep(3)
-
-        txs_2 = []
-        for content in txs:
-            txs_2.append({
-                'tx_time': int(content['time']),
-                'tx_id': content['txid'],
-                'tx_token_addr': content['tokenAddr'],
-                'tx_token_decimals': int(content['tokenDecimals']),
-                'tx_from': content['from'],
-                'tx_to': content['to'],
-                'tx_value': int(content['value'])
-            })
+        # 下载
+        txs_2 = get_txs_by_normal(address, apikey=apikey, page_num=1, page_size=PAGE_SIZE)
         
         print(len(txs_2))
 
@@ -323,36 +401,38 @@ def get_tx(source_address, target_address, sqlalchemy_con):
 
 
 if __name__ == '__main__':
-    graph = create_neo4j_graph()
-    pymysql_con = create_pymysql_con()
-    sqlalchemy_con = create_sqlalchemy_con()
-    check_mysql_databases(pymysql_con)
-    address = '0x04e8cc30871649a9d941deb324d3460d6101cc57'
-    # for address in FOUR_ADDRESSES:
-    #     a, b = download_and_saved_address_txs(
-    #         address,
-    #         pymysql_con=pymysql_con,
-    #         sqlalchemy_con=sqlalchemy_con,
-    #         graph=graph,
-    #         update=True
-    #     )
+    # graph = create_neo4j_graph()
+    # pymysql_con = create_pymysql_con()
+    # sqlalchemy_con = create_sqlalchemy_con()
+    # check_mysql_databases(pymysql_con)
+    # address = '0x04e8cc30871649a9d941deb324d3460d6101cc57'
+    # # for address in FOUR_ADDRESSES:
+    # #     a, b = download_and_saved_address_txs(
+    # #         address,
+    # #         pymysql_con=pymysql_con,
+    # #         sqlalchemy_con=sqlalchemy_con,
+    # #         graph=graph,
+    # #         update=True
+    # #     )
 
-    # a, b = download_and_saved_address_txs(
-    #     address,
-    #     pymysql_con=pymysql_con,
-    #     sqlalchemy_con=sqlalchemy_con,
-    #     graph=graph,
-    #     update=False
-    # )
-    # claen_mysql_neo4j(pymysql_con, graph)
+    # # a, b = download_and_saved_address_txs(
+    # #     address,
+    # #     pymysql_con=pymysql_con,
+    # #     sqlalchemy_con=sqlalchemy_con,
+    # #     graph=graph,
+    # #     update=False
+    # # )
+    # # claen_mysql_neo4j(pymysql_con, graph)
 
-    # a = get_group_st_tx(FOUR_ADDRESSES, sqlalchemy_con=sqlalchemy_con)
-    wallets_DF, st_txs_DF, not_show_DF = get_group_st_tx(FOUR_ADDRESSES,
-                                                         sqlalchemy_con=sqlalchemy_con,
-                                                         class_filter={
-                                                             'max_degree': 3,
-                                                             'class_num': 30
-                                                         })
-    # st_txs_DF, wallets_DF = get_all_st_tx(sqlalchemy_con=sqlalchemy_con)
-    a, b = deal_txs(wallets_DF, st_txs_DF, not_show_DF)
-    pymysql_con.close()
+    # # a = get_group_st_tx(FOUR_ADDRESSES, sqlalchemy_con=sqlalchemy_con)
+    # wallets_DF, st_txs_DF, not_show_DF = get_group_st_tx(FOUR_ADDRESSES,
+    #                                                      sqlalchemy_con=sqlalchemy_con,
+    #                                                      class_filter={
+    #                                                          'max_degree': 3,
+    #                                                          'class_num': 30
+    #                                                      })
+    # # st_txs_DF, wallets_DF = get_all_st_tx(sqlalchemy_con=sqlalchemy_con)
+    # a, b = deal_txs(wallets_DF, st_txs_DF, not_show_DF)
+    # pymysql_con.close()
+    asyncio.run(get_txs_by_airstack("0x04e8cc30871649a9d941deb324d3460d6101cc57"))
+

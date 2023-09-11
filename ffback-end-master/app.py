@@ -12,8 +12,9 @@ from sqlalchemy import text
 
 app = Flask(__name__)
 
+CORS(app)
 # r'/*' 是通配符，让本服务器所有的 URL 都允许跨域请求
-CORS(app, resources=r'/*')
+# CORS(app, resources=r'/*')
 
 
 @app.route('/graph/group', methods=['POST'])

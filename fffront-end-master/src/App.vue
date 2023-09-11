@@ -309,9 +309,9 @@
               <el-button @click="backout" type="danger">
                 Cancel
               </el-button>
-              <el-button @click="saveData2Local" type="primary">
+              <!-- <el-button @click="saveData2Local" type="primary">
                 Save
-              </el-button>
+              </el-button> -->
 
 
               <el-popconfirm title="Existing nodes and locally saved records will be lost" @confirm="clearGraph">
@@ -401,8 +401,8 @@ export default {
   data() {//为组件注册数据
     return {
       nodeConfForm: {
-        label: 'test',
-        showlabel: true,
+        label: '',
+        showlabel: false,
         radius: 1,
         fillColor: 'test',
         alpha: 1
@@ -433,7 +433,7 @@ export default {
       //   '0xc890d861b3cf456be410503b2120ff3b2965347c',
       //   '0xcbf11fed85aaa5377a1268ae84b3f3692ef98da4'
       // ],
-      groupAddresses: ['0x957EbB248503336d8c2E0DF0D9Ac4AbEaCcF3327', '0x3f305417ddc1771dbff8da29cfc20d5331b488da'],
+      groupAddresses: ['0xe8375621c8bb2bfaccddf6e272aaf5eebf7a6d91', '0x3f305417ddc1771dbff8da29cfc20d5331b488da'],
       classFilterForm: {
         class_num: 1,
         in_degree: 0,
@@ -592,14 +592,14 @@ export default {
       })
     },
     // 保存
-    saveData2Local() {
-      var visgraphData = visgraph.getGraphData()
-      localStorage.setItem("visgraphData", JSON.stringify(this.dataStep))
-      ElMessage({
-        message: `保存成功！共${this.dataStep.data.length}个查询结果`,
-        type: 'success'
-      })
-    },
+    // saveData2Local() {
+    //   var visgraphData = visgraph.getGraphData()
+    //   localStorage.setItem("visgraphData", JSON.stringify(this.dataStep))
+    //   ElMessage({
+    //     message: `保存成功！共${this.dataStep.data.length}个查询结果`,
+    //     type: 'success'
+    //   })
+    // },
     // 撤销
     backout() {
       if (this.dataStep.importAddresses.length == 0) {
@@ -672,7 +672,7 @@ export default {
       }
     },
     // 获取class节点类用于展示
-    getClassNodeAddresses(node) {
+    async getClassNodeAddresses(node) {
       this.showAddressesTable = []
       if (node.properties.class == true) {
         // 聚类节点
@@ -762,14 +762,15 @@ export default {
 
     //-------------------------------数据获取----------------------------
     // 更改聚类节点的配置 工具函数
-    drawClassNode() {
+    async drawClassNode() {
       // 重新渲染节点和边的函数
       const nodes = visgraph.nodes;
       for (let i = 0; i < nodes.length; i++) {
         if (nodes[i].properties.class) {// 说明是聚类节点
+          nodes[i].label = ''
           nodes[i].showlabel = false
           nodes[i].alpha = 0.5
-          nodes[i].radius = 5 + nodes[i].properties.addresses.length / 5  // 根据聚类数量调整大小
+          nodes[i].radius = 5 + nodes[i].properties.addresses.length / 20  // 根据聚类数量调整大小
         }
       }
       const links = visgraph.links;
@@ -869,6 +870,13 @@ export default {
         headers: { 'Content-Type': 'application/json; charset=utf-8' }
       });
       visgraph.activeAddNodeLinks(res.nodes, res.links)
+      // for (let i = 0; i < res.nodes.length; i++) {
+      //   if (res.nodes[i].properties.class) {
+      //     res.nodes[i].showlabel = false
+      //     res.nodes[i].alpha = 0.5
+      //     res.nodes[i].radius = 5 + res.nodes[i].properties.addresses.length / 5  // 根据聚类数量调整大小
+      //   }
+      // }
       this.dataStep.importAddresses.push(toRaw(this.groupAddresses))
       this.dataStep.data.push(res)
       this.visLayoutConf = runXXLayout("Tree", visgraph.getGraphData()).getConfig();
