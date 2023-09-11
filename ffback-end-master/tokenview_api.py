@@ -139,7 +139,8 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
 
     if if_download:
         # 下载
-        txs_2 = get_txs_by_normal(address, apikey=apikey, page_num=1, page_size=PAGE_SIZE)
+        # txs_2 = get_txs_by_normal(address, apikey=apikey, page_num=1, page_size=PAGE_SIZE)
+        txs_2 = asyncio.run(get_txs_by_airstack(address, apikey=apikey, page_num=1, page_size=PAGE_SIZE))
         
         print(len(txs_2))
 
