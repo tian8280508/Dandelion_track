@@ -5,7 +5,7 @@
       <el-col :span="10">
 
         <!-- 左上 -->
-        <el-card style="height: 500px;">
+        <el-card style="height: 400px;">
           <el-table :data="showAddressesTable" style="width: 100%" v-if="currentClick == 'classNode'"
             :max-height="tableMaxHeight">
             <el-table-column prop="address" label="地址" sortable />
@@ -30,10 +30,10 @@
 
         </el-card>
         <!-- 左下 ctrl k -->
-        <el-card>
+        <el-card style="height: 500px;">
           <el-tabs v-model="activeTab" class="demo-tabs" @tab-click="handleClick">
 
-            <el-tab-pane label="节点导入 | 交易过滤" name="importNodeTab">
+            <!-- <el-tab-pane label="节点导入 | 交易过滤" name="importNodeTab">
               <el-scrollbar :height="scrollbarHeight">
                 <el-form :model="txFilterForm" label-position="left" label-width="120px" style="max-width: 400px">
                   <el-form-item label="起时间">
@@ -188,7 +188,7 @@
 
               </el-scrollbar>
 
-            </el-tab-pane>
+            </el-tab-pane> -->
             <el-tab-pane label="布局配置" name="visLayoutConfTab">
               <el-scrollbar :height="scrollbarHeight">
                 <div v-if="visLayoutConf">
@@ -248,6 +248,21 @@
                 </el-form-item>
               </el-form>
             </el-tab-pane>
+
+            <el-tab-pane label="节点命名" name="nameTab">
+              <el-form label-position="left" label-width="120px">
+                <el-form-item label="hash">
+                  <el-input style=" width: 260px;" placeholder="Input node hash" v-model="newname"></el-input>
+                </el-form-item>
+                <el-form-item label="newname">
+                  <el-input style=" width: 260px;" placeholder="Input new name" v-model="newnamehash"></el-input>
+                </el-form-item>
+                <el-form-item>
+                  <el-button @click="updateName">更新名称</el-button>
+                </el-form-item>
+              </el-form>
+            </el-tab-pane>
+
             <el-tab-pane label="元素自定义" name="elementConfTab">
 
               <el-form label-position="left" label-width="120px"
@@ -278,10 +293,10 @@
 
               </el-form>
             </el-tab-pane>
-            <el-tab-pane label="社群发现配置" name="communityConfTab">
+            <!-- <el-tab-pane label="社群发现配置" name="communityConfTab">
               <el-form label-position="left" label-width="120px">
               </el-form>
-            </el-tab-pane>
+            </el-tab-pane> -->
           </el-tabs>
 
         </el-card>
@@ -409,6 +424,8 @@ export default {
       showAddressesTable: [],// 对于class来说需要展示的列表
       inputVisible: false,
       inputAddressTagValue: '',//输入的地址标签的值 
+      newnamehash: '0x04e8cc30871649a9d941deb324d3460d6101cc57',
+      newname: 'fund1',
       // groupAddresses: [
       //   '0x189df2a9e40ae85c76bf821d07137a7d2f8fe279',
       //   '0x5091290dea577fd1890edd1c47bfc962119c7d50',
@@ -439,7 +456,7 @@ export default {
         value_threshold: 0,
         st_num_limit: 10000,
       }, // 交易过滤表
-      apikey: 'YnOUlgesgKP2wTTQm04Z',
+      apikey: 'Mpv5yY7i0kPRLuFLGtgO',
       importAddress: '0x04e8cc30871649a9d941deb324d3460d6101cc57',// 绑定的需要提交的节点
       activeTab: "elementConfTab", //激活的tab
       visLayoutOption: ["Tree", "Kk", "FastFR", "Radiatree", "FrDirect", 'Concentric', 'Hubsize'],// 可选布局
@@ -736,7 +753,7 @@ export default {
       this.nodeConfForm.node.alpha = this.nodeConfForm.alpha
     },
     // ------------------------表单----------------------------
-
+    
 
 
     //-------------------------------数据获取----------------------------
@@ -805,6 +822,21 @@ export default {
       if (res.status == '200') {
         ElMessage({
           message: `apikey更改成功,当前apikey为${this.apikey}`,
+          type: 'success',
+        })
+      }
+    },
+    async updateName() {
+      console.log(this.apikey);
+      const { data: res } = await this.$http.post(`/api/setname`, {
+        address: this.newnamehash,
+        name: this.newname
+      }, {
+        headers: { 'Content-Type': 'application/json; charset=utf-8' }
+      })
+      if (res.status == '200') {
+        ElMessage({
+          message: `name更改成功,当前name为${this.newname}`,
           type: 'success',
         })
       }

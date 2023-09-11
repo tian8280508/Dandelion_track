@@ -8,6 +8,7 @@ from tokenview_api import \
 
 from process import deal_txs, deal_st,deal_tx
 from config import APIKEY
+from sqlalchemy import text
 
 app = Flask(__name__)
 
@@ -87,6 +88,30 @@ def txs():
         'txs': txs
     })
 
+@app.route('/api/setname', methods=['POST'])
+def setnewname():
+    sqlalchemy_con = create_pymysql_con()
+    cursor = sqlalchemy_con.cursor()
+    address = request.json['address']
+    name = request.json['name']
+    
+    sql = "INSERT INTO namemapping (id, name) VALUES ('%s', '%s') ON \
+        DUPLICATE KEY UPDATE name = '%s'" % (address, name, name)
+    print(sql)
+    try:
+        cursor.execute(sql)
+        sqlalchemy_con.commit()
+        cursor.close()
+        
+    except Exception as e:
+        print(e)
+        return jsonify({
+            'status': 500
+        })
+    
+    return jsonify({
+        'status': 200
+    })
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=5000, debug=True)
