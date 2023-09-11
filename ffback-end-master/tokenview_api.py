@@ -6,6 +6,7 @@ from config import *
 from utils.common import sftp_upload_file
 from utils.connect import create_pymysql_con, create_sqlalchemy_con, create_neo4j_graph, check_mysql_databases
 from process import deal_txs
+from sqlalchemy import text
 
 
 def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, update=True, apikey=APIKEY,
@@ -71,7 +72,9 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
         sql = 'INSERT INTO wallets(wa_address) VALUES (%s)'
         addresses_value = list(set([tx['tx_from'] for tx in txs_2] + [tx['tx_to'] for tx in txs_2]))
         addresses_value = [[address] for address in addresses_value]
-        res0 = cursor.executemany(sql, addresses_value)
+        
+        # res0 = cursor.executemany(sql, addresses_value)
+        
         # transactions
         sql = "INSERT IGNORE INTO transactions(tx_time, tx_id, tx_token_addr, tx_token_decimals, tx_from, tx_to, tx_value) VALUES (%s, %s, %s, %s, %s,%s, %s)"
         tx_value = [list(tx.values()) for tx in txs_2]
@@ -80,9 +83,10 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
         # download_history
         sql2 = "INSERT INTO download_history(download_time, download_address) VALUES (%s,%s)"
         res2 = cursor.execute(sql2, (time.time(), address))
-
-        print(f'MYSQL:存储数据{res1 + res2}条,cost:%3.2f' % (time.time() - time_start))
-
+        try:
+            print(f'MYSQL:存储数据{res1 + res2}条,cost:%3.2f' % (time.time() - time_start))
+        except:
+            print(f'No value in {address}')
         # neo4j
         time_start = time.time()
         # tx_DF.to_csv(f'{TEMP_SAVE_PATH}transactions.csv', encoding='utf-8', index=False)
@@ -141,7 +145,7 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
     # 这里逻辑有问题，不是返回所有节点,而是在statisic里面出现过的节点
     # wallets_DF = pd.read_sql_table('wallets', con=sqlalchemy_con).rename(columns={'wa_id': 'id'})
     sql = f"SELECT * FROM statistic WHERE st_from='{address}' OR st_to='{address}'"
-    statistic_DF = pd.read_sql(sql, con=sqlalchemy_con)
+    statistic_DF = pd.read_sql(text(sql), con=sqlalchemy_con)
 
     sql = f"""
             SELECT *
@@ -157,7 +161,7 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
                 WHERE st_from = '{address}')
         """
 
-    wallets_DF = pd.read_sql(sql, con=sqlalchemy_con).rename(columns={'wa_id': 'id'})
+    wallets_DF = pd.read_sql(text(sql), con=sqlalchemy_con).rename(columns={'wa_id': 'id'})
     if st_num_limit < statistic_DF.shape[0]:
         print(f"st数据{statistic_DF.shape[0]}条")
         # 这时候st表中有很多其他的 不在DF中的交易记录
@@ -176,7 +180,7 @@ def download_and_saved_address_txs(address, pymysql_con, sqlalchemy_con, graph, 
 def get_all_st_tx(sqlalchemy_con):
     # 读取statistic表的信息
     sql = "SELECT * FROM statistic"
-    st_txs_DF = pd.read_sql(sql, con=sqlalchemy_con)
+    st_txs_DF = pd.read_sql(text(sql), con=sqlalchemy_con)
 
     # wallets_DF = pd.read_sql_table('wallets', con=sqlalchemy_con).rename(columns={'wa_id': 'id'})
     #
@@ -217,7 +221,7 @@ def get_group_st_tx(addresses, pymysql_con, sqlalchemy_con, graph, update=False,
     WHERE st_from in {addresses_sql}
     """
     in_DF_columns = ["in_" + address for address in addresses]  # 针对其他节点来说的!
-    in_DF = pd.read_sql(sql, con=sqlalchemy_con)
+    in_DF = pd.read_sql(text(sql), con=sqlalchemy_con)
     in_st_DF = pd.DataFrame(columns=in_DF_columns)
     # 完成头节点是节点群的邻接矩阵
     for index, row in in_DF.iterrows():
@@ -232,7 +236,7 @@ def get_group_st_tx(addresses, pymysql_con, sqlalchemy_con, graph, update=False,
       """
     out_DF_columns = ["out_" + address for address in addresses]
     out_st_DF = pd.DataFrame(columns=out_DF_columns)
-    out_DF = pd.read_sql(sql, con=sqlalchemy_con)
+    out_DF = pd.read_sql(text(sql), con=sqlalchemy_con)
     for index, row in out_DF.iterrows():
         address = row['st_from']
         address_in_group = row['st_to']
@@ -304,7 +308,7 @@ def get_node_st(address, sqlalchemy_con):
     FROM statistic
     WHERE st_from = '{address}' or st_to='{address}'
     """
-    st_DF = pd.read_sql(sql, con=sqlalchemy_con)
+    st_DF = pd.read_sql(text(sql), con=sqlalchemy_con)
     return st_DF
 
 
@@ -314,7 +318,7 @@ def get_tx(source_address, target_address, sqlalchemy_con):
     FROM transactions
     WHERE tx_from='{source_address}' AND tx_to='{target_address}'
     """
-    tx_DF = pd.read_sql(sql, con=sqlalchemy_con)
+    tx_DF = pd.read_sql(text(sql), con=sqlalchemy_con)
     return tx_DF
 
 

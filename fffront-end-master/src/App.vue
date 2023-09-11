@@ -296,17 +296,17 @@
           <el-row>
             <el-col :span="8">
               <el-button @click="backout" type="danger">
-                撤销
+                Cancel
               </el-button>
               <el-button @click="saveData2Local" type="primary">
-                保存
+                Save
               </el-button>
 
 
-              <el-popconfirm title="现有的节点,本地保存的记录都将不见" @confirm="clearGraph">
+              <el-popconfirm title="Existing nodes and locally saved records will be lost" @confirm="clearGraph">
                 <template #reference>
                   <el-button type="success">
-                    清除
+                    Clear
                   </el-button>
                 </template>
               </el-popconfirm>

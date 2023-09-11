@@ -1,6 +1,7 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import pymysql
 from py2neo import Graph
+import pandas as pd
 
 MYSQL_CONFIG = {
     "username": 'root',
@@ -18,16 +19,18 @@ NEO4J_CONFIG = {
 }
 
 def create_sqlalchemy_con():
-    seq = "mysql+mysqldb://{}:{}@{}:{}/{}".format(MYSQL_CONFIG["username"], 
-                                             MYSQL_CONFIG["password"], 
-                                             MYSQL_CONFIG["host"], 
-                                             MYSQL_CONFIG["port"], 
-                                             MYSQL_CONFIG["database"])
-    print(seq)
-    engine = create_engine(seq)
+    DATABASE_USERNAME = MYSQL_CONFIG["username"]
+    DATABASE_PASSWORD = MYSQL_CONFIG["password"]
+    DATABASE_HOST = MYSQL_CONFIG["host"]
+    DATABASE_PORT = MYSQL_CONFIG["port"]
+    DATABASE_NAME = MYSQL_CONFIG["database"]
+    connection_string = f"mysql+pymysql://{DATABASE_USERNAME}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_NAME}"
+    
+    engine = create_engine(connection_string)
     sqlalchemy_con = engine.connect()  # 创建连接
     try:
-        sqlalchemy_con.execute("SELECT 1")  # 测试连接
+        # print(sqlalchemy_con)
+        sqlalchemy_con.execute(text("SELECT 1"))  # 执行简单的sql语句
         print("成功连接数据库")
     except Exception as e:
         print(e)
