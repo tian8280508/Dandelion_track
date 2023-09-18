@@ -9,7 +9,7 @@ let app = createApp(App)
 app.use(ElementPlus,{locale:zhCn})   // use
 
 app.config.globalProperties.$http = axios
-axios.defaults.baseURL = 'http://127.0.0.1:5000/'
+axios.defaults.baseURL = 'http://124.220.1.170:5000/'
 
 app.mount('#app')
 
